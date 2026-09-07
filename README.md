@@ -1,0 +1,1 @@
+The bot that performs a communication between the logistian and the driver.
