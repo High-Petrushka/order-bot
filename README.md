@@ -1,1 +1,1 @@
-The bot that performs a communication between the logistian and the driver.
+The bot that takes an order from the logistian, makes a record to the database, and sends this order to the worker of the delivery service.
