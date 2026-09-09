@@ -22,6 +22,30 @@ class DB {
             if (conn) conn.release();
         }
     }
+
+    async addUser(userName) {
+        let conn;
+        try {
+            conn = await this.pool.getConnection();
+            await conn.query("INSERT INTO users(name) VALUES (?)", [userName]);
+        } catch (e) {
+            throw e;
+        } finally {
+            if (conn) conn.release();
+        }
+    }
+
+    async deletUser(userName) {
+        let conn;
+        try {
+            conn = await this.pool.getConnection();
+            await conn.query("DELETE FROM users WHERE name = ?", [userName]);
+        } catch (e) {
+            throw e;
+        } finally {
+            if (conn) conn.release();
+        }
+    }
 }
 
 export default DB;

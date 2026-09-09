@@ -2,7 +2,7 @@ import { config } from "dotenv";
 import { createPool } from "mariadb";
 
 import { Bot, Keyboard } from "grammy";
-import { conversations, createConversation } from "@grammyjs/conversations";
+import { conversations, create, createConversation } from "@grammyjs/conversations";
 
 import DB from "./bot_modules/database.js"
 
@@ -33,27 +33,46 @@ bot.api.setMyCommands([
 
 // KEYBOARDS
 
-const keyboard = new Keyboard().text("Show Users").row().text("Add User").resized();
+const keyboard = new Keyboard()
+    .text("Show Users").row()
+    .text("Add User").row()
+    .text("Delete User").resized();
 
 
 // CONVERSATIONS
 
 async function addUser(conversation, ctx) { 
     await ctx.reply("Enter a user name");
-    const { message } = await conversation.waitFor("message:text")
+    const { message } = await conversation.waitFor("message:text");
 
-    let conn;
-    try {
-        conn = await pool.getConnection();
-        await conn.query(`INSERT INTO users(name) VALUES ('${message.text}')`);
-        await ctx.reply("The user was successfully added!");
-    } catch (e) {
-        console.log(e);
-    } finally {
-        if (conn) conn.release();
-    }
+    await db.addUser(message.text);
+    await ctx.reply("The user was successfully added!");
 }
 bot.use(createConversation(addUser));
+
+async function deleteUser(conversation, ctx) {
+    const users = await db.getUsers();
+    const buttonRows = users.map((user) => [Keyboard.text(user["name"])]);
+    const usersKeyboard = Keyboard.from(buttonRows).resized();
+
+    await ctx.reply("Choose the user to be deleted", {
+        reply_markup: usersKeyboard
+    });
+
+    const { message } = await conversation.waitFor("message:text");
+    try {
+        db.deletUser(message.text);
+        await ctx.reply(`The user ${message.text} was successfully deleted!`, {
+            reply_markup: keyboard
+        });
+    } catch (e) {
+        console.log(e);
+        await ctx.reply("Something went wrong. Try again later.", {
+            reply_markup: keyboard
+        });
+    }
+}
+bot.use(createConversation(deleteUser));
 
 
 // COMMANDS
@@ -99,6 +118,10 @@ bot.hears("Show Users", async (ctx) => {
 
 bot.hears("Add User", async (ctx) => {
     await ctx.conversation.enter("addUser");
+});
+
+bot.hears("Delete User", async (ctx) => {
+    await ctx.conversation.enter("deleteUser");
 });
 
 bot.hears(/fuck/, async (ctx) => {
