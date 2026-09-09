@@ -1,18 +1,27 @@
+import { createPool } from "mariadb";
 
-async function getUsers(pool) { 
-    let conn;
-    try {
-        conn = await pool.getConnection();
-        const users = await conn.query("SELECT name FROM users");
-        return users;
-    } catch (e) {
-        console.log(e);
-        return null;
-    } finally {
-        if (conn) conn.release();
+class DB {
+    constructor (host, user, password, database, connectionLimit) {
+        this.pool = createPool({
+            host: host,
+            user: user,
+            password: password,
+            database: database,
+            connectionLimit: connectionLimit
+        });
+    }
+
+    async getUsers() {
+        let conn;
+        try {
+            conn = await this.pool.getConnection();
+            return await conn.query("SELECT name FROM users");
+        } catch (e) {
+            console.log(e);
+        } finally {
+            if (conn) conn.release();
+        }
     }
 }
 
-const database = { "getUsers": getUsers }
-
-export default database;
+export default DB;
