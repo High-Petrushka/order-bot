@@ -5,5 +5,5 @@
     "grammy": "^1.46.0",
     "mariadb": "^3.5.4"
   },
-  "type": "commonjs"
+  "type": "module"
 }

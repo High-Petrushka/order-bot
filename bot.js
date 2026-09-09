@@ -1,17 +1,17 @@
-require("dotenv").config();
-require("grammy").Keyboard;
+import { config } from "dotenv";
+import { createPool } from "mariadb";
 
-const grammy = require("grammy");
-const { conversations, createConversation } = require(
-    "@grammyjs/conversations",
-);
+import { Bot, Keyboard } from "grammy";
+import { conversations, createConversation } from "@grammyjs/conversations";
+
+import database from "./bot_modules/database.js";
+
+config();
 
 
 // DATABASE SETTINGS
 
-const mariadb = require("mariadb");
-
-const pool = mariadb.createPool({
+const pool = createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
     password: process.env.DB_PWD,
@@ -22,7 +22,7 @@ const pool = mariadb.createPool({
 
 // BOT SETTINGS
 
-const bot = new grammy.Bot(process.env.TOKEN);
+const bot = new Bot(process.env.TOKEN);
 bot.use(conversations());
 
 bot.api.setMyCommands([
@@ -33,7 +33,7 @@ bot.api.setMyCommands([
 
 // KEYBOARDS
 
-const keyboard = new grammy.Keyboard().text("Show Users").row().text("Add User").resized();
+const keyboard = new Keyboard().text("Show Users").row().text("Add User").resized();
 
 
 // CONVERSATIONS
@@ -95,7 +95,7 @@ bot.hears("Show Users", async (ctx) => {
 
         const users = await conn.query("SELECT name FROM users");
 
-        for (i in users) {
+        for (let i in users) {
             text += `${Number(i) + 1}. ${users[i]["name"]}\n`;
         }
 
