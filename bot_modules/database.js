@@ -11,13 +11,17 @@ class DB {
         });
     }
 
-    async getUsers() {
+    async getUsers(role=null) {
         let conn;
         try {
             conn = await this.pool.getConnection();
-            return await conn.query("SELECT name FROM users");
+            if (role) {
+                return await conn.query(`SELECT name FROM users WHERE role='${role}'`);
+            } else {
+                return await conn.query("SELECT name FROM users");
+            }
         } catch (e) {
-            console.log(e);
+            throw e;
         } finally {
             if (conn) conn.release();
         }
